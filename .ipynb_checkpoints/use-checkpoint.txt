@@ -1,0 +1,127 @@
+# Guía de Uso 
+
+
+---
+
+## 1. Clonar el repositorio desde GitHub
+
+Ejecuta el siguiente comando en tu terminal:
+
+```bash
+git clone https://github.com/Luis0815/clustermap-explorer-tda-data.git
+```
+
+Luego entra al directorio clonado:
+
+```bash
+cd clustermap-explorer-tda-data
+```
+
+---
+
+## 2. Ejecutar la aplicación interactiva
+
+Asegúrate de tener **Streamlit** instalado. Si no lo tienes:
+
+```bash
+pip install streamlit
+```
+
+Luego, dentro del repositorio clonado, ejecuta:
+
+```bash
+streamlit run app.py
+```
+
+Esto abrirá la aplicación en tu navegador.
+
+---
+
+## 3. Archivos necesarios para correr la aplicación
+
+La app solicita **dos archivos**:
+
+### ✔ 1. Carpeta con matrices de distancia (CSV)
+
+* Deben ser matrices cuadradas.
+* Las filas deben coincidir con las columnas.
+* Los nombres de archivo serán limpiados automáticamente.
+
+### ✔ 2. Archivo de metadatos (CSV)
+
+Debe contener una columna que represente los nombres de archivo. La app detecta automáticamente nombres como:
+
+* Archivo
+* Sample
+* File / Filename
+* Name
+
+El archivo también puede incluir columnas opcionales como:
+
+* Condition
+* Gender
+* Tumor stage
+* BMT
+* Desmoplastic category
+* Grado displasia
+
+---
+
+## 4. ¿Qué puedes hacer con la app?
+
+La aplicación te permite:
+
+### 🔹 1. Generar **clustermaps jerárquicos** interactivos.
+
+* Dendrograma de las muestras
+* Barras de color con anotaciones múltiples
+* Agrupamiento basado en la matriz de distancias
+
+### 🔹 2. Seleccionar qué **anotaciones** mostrar
+
+* Tipo
+* Fanconi
+* Tumor stage
+* Condition
+* Gender, etc.
+
+### 🔹 3. Elegir **subgrupos específicos** para análisis
+
+* Carcinoma FA vs No FA
+* Dysplasia FA vs No FA
+* Stroma-ad Carcinoma o Dysplasia
+* Grupos mixtos (and-stroma)
+* Comparación entre tipos de tejido
+
+### 🔹 4. Filtrar y comparar solo las muestras que te interesan
+
+La app permite seleccionar manualmente qué muestras incluir en el dendrograma.
+
+### 🔹 5. Visualizar y descargar los clustermaps
+
+Los gráficos generados pueden ser guardados directamente desde la interfaz.
+
+---
+
+## 5. Estructura del repositorio
+
+```
+clustermap-explorer-tda-data/
+│
+├── app.py                  # Aplicación Streamlit
+├── generar_subclustermaps.py
+├── visualizacion/          # Salidas gráficas
+├── README.md               # Descripción general
+└── use.txt                 # Este archivo de instrucciones
+```
+
+---
+
+## 6. Notas finales
+
+* Asegúrate de que los nombres de las muestras en las matrices coincidan con los del metadato.
+* Puedes actualizar tus matrices y metadatos sin modificar el código.
+* La app está diseñada para exploración visual rápida y flexible.
+
+---
+
