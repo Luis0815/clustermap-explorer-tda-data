@@ -52,9 +52,9 @@ def get_grado_displasia(filename):
 # =====================================================
 
 type_colors = {
-    'carcinoma': '#1F990F ',
-    'dysplasia': '#1A66FF ',
-    'stroma-ad-carcinoma': '#8AE67E ',
+    'carcinoma': '#1F990F',
+    'dysplasia': '#1A66FF',
+    'stroma-ad-carcinoma': '#8AE67E',
     'stroma-ad-dysplasia': '#80D4FF',
     'and-stroma': '#000000',
     'other': '#7f7f7f'
