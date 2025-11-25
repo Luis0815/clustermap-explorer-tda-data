@@ -52,17 +52,17 @@ def get_grado_displasia(filename):
 # =====================================================
 
 type_colors = {
-    'carcinoma': '#6B990F',
-    'dysplasia': '#260F99',
-    'stroma-ad-carcinoma': '#E5FFB2',
-    'stroma-ad-dysplasia': '#BFB2FF',
+    'carcinoma': '#1F990F ',
+    'dysplasia': '#1A66FF ',
+    'stroma-ad-carcinoma': '#8AE67E ',
+    'stroma-ad-dysplasia': '#80D4FF',
     'and-stroma': '#000000',
     'other': '#7f7f7f'
 }
 
 fanconi_colors = {'Fanconi': '#d73027', 'No Fanconi': '#4575b4'}
 condition_colors = {'AG': '#FFB900', 'HN': '#5773CC'}
-gender_colors = {'female': '#E377C2', 'male': '#1F77B4'}
+gender_colors = {'female': '#8B2DB2', 'male': '#3CB22D'}
 
 tumor_stage_colors = {
     'Stage 0': '#F0F921', 'Stage I': '#FBA238', 'Stage IB': '#F1605D',
@@ -70,7 +70,7 @@ tumor_stage_colors = {
     'Stage IIIB': '#3300A7', 'Stage IVa': '#0D0887', 'Stage IVc': '#06002A'
 }
 
-bmt_colors = {'Yes': '#2ca02c', 'No': '#d62728'}
+bmt_colors = {'Yes': '#009999', 'No': '#CC5500'}
 
 desmo_colors = {
     'immature': '#EF9A9A',
@@ -79,8 +79,8 @@ desmo_colors = {
 }
 
 grado_colors = {
-    'LG': '#81C784',
-    'HG': '#388E3C',
+    'LG': '#D8AF97',
+    'HG': '#996035',
     'Desconocido': '#FFFFFF'
 }
 
