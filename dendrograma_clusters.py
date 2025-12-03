@@ -84,6 +84,26 @@ grado_colors = {
     'Desconocido': '#FFFFFF'
 }
 
+tda_distance_colors = {
+    # Epithelium – ggsci::default_jama
+    'epithelium_100µm': '#374E55FF',
+    'epithelium_200µm': '#DF8F44FF',
+    'epithelium_300µm': '#00A1D5FF',
+    'epithelium_400µm': '#B24745FF',
+
+    # Stroma – ggsci::hallmarks_dark_cosmic
+    'stroma_100µm': '#8DD3C7',
+    'stroma_200µm': '#FFFFB3',
+    'stroma_300µm': '#BEBADA',
+    'stroma_400µm': '#FB8072',
+    'stroma_500µm': '#80B1D3',
+    'stroma_600µm': '#FDB462',
+    'stroma_700µm': '#B3DE69',
+    'stroma_800µm': '#FCCDE5',
+    'stroma_900µm': '#D9D9D9'
+}
+
+
 color_palettes = {
     'Tipo': type_colors,
     'Fanconi': fanconi_colors,
@@ -92,7 +112,8 @@ color_palettes = {
     'Tumor stage': tumor_stage_colors,
     'BMT': bmt_colors,
     'Desmoplastic category': desmo_colors,
-    'Grado displasia': grado_colors
+    'Grado displasia': grado_colors,
+    'TDA_by_distance': tda_distance_colors
 }
 
 # =====================================================

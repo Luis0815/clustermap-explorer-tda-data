@@ -104,7 +104,7 @@ annotations["Tipo"] = [get_sample_type(n) for n in cleaned]
 annotations["Fanconi"] = [get_fanconi_status(n) for n in cleaned]
 annotations["Grado displasia"] = [get_grado_displasia(n) for n in cleaned]
 
-for col in ["Condition", "Gender", "Tumor stage", "BMT", "Desmoplastic category"]:
+for col in ["Condition", "Gender", "Tumor stage", "BMT", "Desmoplastic category", "TDA_by_distance"]:
     if col in metadata.columns:
         annotations[col] = metadata.reindex(cleaned)[col]
 

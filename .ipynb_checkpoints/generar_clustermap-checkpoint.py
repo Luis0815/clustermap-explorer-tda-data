@@ -47,21 +47,21 @@ def get_grado_displasia(filename):
 
 
 # =====================================================
-# Colores
+# Paletas de colores
 # =====================================================
 
 type_colors = {
-    'carcinoma': '#6B990F',
-    'dysplasia': '#260F99',
-    'stroma-ad-carcinoma': '#E5FFB2',
-    'stroma-ad-dysplasia': '#BFB2FF',
+    'carcinoma': '#1F990F',
+    'dysplasia': '#1A66FF',
+    'stroma-ad-carcinoma': '#8AE67E',
+    'stroma-ad-dysplasia': '#80D4FF',
     'and-stroma': '#000000',
     'other': '#7f7f7f'
 }
 
 fanconi_colors = {'Fanconi': '#d73027', 'No Fanconi': '#4575b4'}
 condition_colors = {'AG': '#FFB900', 'HN': '#5773CC'}
-gender_colors = {'female': '#E377C2', 'male': '#1F77B4'}
+gender_colors = {'female': '#8B2DB2', 'male': '#3CB22D'}
 
 tumor_stage_colors = {
     'Stage 0': '#F0F921', 'Stage I': '#FBA238', 'Stage IB': '#F1605D',
@@ -69,7 +69,7 @@ tumor_stage_colors = {
     'Stage IIIB': '#3300A7', 'Stage IVa': '#0D0887', 'Stage IVc': '#06002A'
 }
 
-bmt_colors = {'Yes': '#2ca02c', 'No': '#d62728'}
+bmt_colors = {'Yes': '#009999', 'No': '#CC5500'}
 
 desmo_colors = {
     'immature': '#EF9A9A',
@@ -78,9 +78,26 @@ desmo_colors = {
 }
 
 grado_colors = {
-    'LG': '#81C784',
-    'HG': '#388E3C',
+    'LG': '#D8AF97',
+    'HG': '#996035',
     'Desconocido': '#FFFFFF'
+}
+
+tda_distance_colors = {
+    'epithelium_100µm': '#FFEDA0',
+    'epithelium_200µm': '#FED976',
+    'epithelium_300µm': '#FEB24C',
+    'epithelium_400µm': '#FD8D3C',
+
+    'stroma_100µm': '#C7E9B4',
+    'stroma_200µm': '#7FCDBB',
+    'stroma_300µm': '#41B6C4',
+    'stroma_400µm': '#1D91C0',
+    'stroma_500µm': '#225EA8',
+    'stroma_600µm': '#0C2C84',
+    'stroma_700µm': '#08306B',
+    'stroma_800µm': '#041F4A',
+    'stroma_900µm': '#02101F'
 }
 
 color_palettes = {
@@ -91,22 +108,36 @@ color_palettes = {
     'Tumor stage': tumor_stage_colors,
     'BMT': bmt_colors,
     'Desmoplastic category': desmo_colors,
-    'Grado displasia': grado_colors
+    'Grado displasia': grado_colors,
+    'TDA_by_distance': tda_distance_colors
 }
 
 # =====================================================
 # FUNCIÓN PRINCIPAL
 # =====================================================
 
-def plot_clustermap(matrix_df, annotations_df, selected_annotations, metodo="average",
-                    figsize=(18, 20), xticklabels=False, yticklabels=False):
+def plot_clustermap(matrix_df, annotations_df, selected_annotations,
+                    metodo="average", figsize=(18, 20),
+                    xticklabels=False, yticklabels=False):
+
+    # Evita errores por columnas que NO existan
+    annotations_df.columns = annotations_df.columns.str.strip()
 
     row_colors_df = None
     if selected_annotations:
         row_colors_df = pd.DataFrame(index=matrix_df.index)
-        for col in selected_annotations:
-            row_colors_df[col] = annotations_df[col].map(color_palettes[col]).fillna("#FFFFFF")
 
+        for col in selected_annotations:
+            if col not in annotations_df.columns:
+                print(f"⚠ Advertencia: La columna '{col}' no existe en annotations_df. Se omite.")
+                continue
+
+            # Mapea colores
+            row_colors_df[col] = annotations_df[col].map(
+                color_palettes.get(col, {})
+            ).fillna("#FFFFFF")
+
+    # Crear clustermap
     g = sns.clustermap(
         matrix_df,
         cmap="viridis",
@@ -126,6 +157,7 @@ def plot_clustermap(matrix_df, annotations_df, selected_annotations, metodo="ave
     # =====================================================
     # LEYENDAS EN DOS COLUMNAS
     # =====================================================
+
     legend_ax1 = g.fig.add_axes([1.03, 0.15, 0.15, 0.70])
     legend_ax2 = g.fig.add_axes([1.20, 0.15, 0.15, 0.70])
 
@@ -144,19 +176,22 @@ def plot_clustermap(matrix_df, annotations_df, selected_annotations, metodo="ave
     def draw_column(ax, annotations_list):
         y_cursor = 0.95
         for annotation in annotations_list:
+            if annotation not in color_palettes:
+                continue
+
             palette = color_palettes[annotation]
 
             ax.text(0.05, y_cursor, annotation, fontsize=11, fontweight="bold",
                     transform=ax.transAxes, va="top")
-
             y_cursor -= y_step_title
 
             for val, color in palette.items():
-                ax.add_patch(plt.Rectangle((0.05, y_cursor - box_h/2),
+                ax.add_patch(plt.Rectangle((0.05, y_cursor - box_h / 2),
                                            box_w, box_h,
                                            facecolor=color,
                                            edgecolor="black",
                                            transform=ax.transAxes))
+
                 ax.text(0.05 + box_w + 0.02, y_cursor, str(val),
                         fontsize=9, va="center", transform=ax.transAxes)
                 y_cursor -= y_step_item
