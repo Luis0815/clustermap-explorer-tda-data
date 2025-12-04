@@ -85,22 +85,20 @@ grado_colors = {
 }
 
 tda_distance_colors = {
-    # Epithelium – ggsci::default_jama
-    'epithelium_100µm': '#374E55FF',
-    'epithelium_200µm': '#DF8F44FF',
-    'epithelium_300µm': '#00A1D5FF',
-    'epithelium_400µm': '#B24745FF',
+    'epithelium_100µm': '#FFEDA0',
+    'epithelium_200µm': '#FED976',
+    'epithelium_300µm': '#FEB24C',
+    'epithelium_400µm': '#FD8D3C',
 
-    # Stroma – ggsci::hallmarks_dark_cosmic
-    'stroma_100µm': '#8DD3C7',
-    'stroma_200µm': '#FFFFB3',
-    'stroma_300µm': '#BEBADA',
-    'stroma_400µm': '#FB8072',
-    'stroma_500µm': '#80B1D3',
-    'stroma_600µm': '#FDB462',
-    'stroma_700µm': '#B3DE69',
-    'stroma_800µm': '#FCCDE5',
-    'stroma_900µm': '#D9D9D9'
+    'stroma_100µm': '#C7E9B4',
+    'stroma_200µm': '#7FCDBB',
+    'stroma_300µm': '#41B6C4',
+    'stroma_400µm': '#1D91C0',
+    'stroma_500µm': '#225EA8',
+    'stroma_600µm': '#0C2C84',
+    'stroma_700µm': '#08306B',
+    'stroma_800µm': '#041F4A',
+    'stroma_900µm': '#02101F'
 }
 
 
