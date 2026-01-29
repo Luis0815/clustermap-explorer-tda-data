@@ -5,7 +5,7 @@ import io
 import importlib
 
 st.set_page_config(layout="wide")
-st.title(" Interactive TDA Clustermap Explorer")
+st.title("Interactive TDA Clustermap Explorer")
 
 # ============================================================
 # SELECCIÓN DEL MÓDULO DESDE LA INTERFAZ
@@ -129,40 +129,16 @@ metodo = st.selectbox("Linkage method", ["average", "ward", "single", "complete"
 
 # ---- Subgrupos ----
 st.subheader(" Subgroups")
-
-from itertools import combinations
-
-# Tipos únicos
-tipos = sorted(annotations["Tipo"].unique())
-
 subgrupos = {
     "All": cleaned,
-    "Fanconi": [
-        s for s in cleaned
-        if annotations.loc[s, "Fanconi"] == "Fanconi"
-    ],
-    "Non-Fanconi": [
-        s for s in cleaned
-        if annotations.loc[s, "Fanconi"] == "No Fanconi"
-    ],
+    "Carcinoma": [s for s in cleaned if annotations.loc[s, "Tipo"] == "carcinoma"],
+    "Dysplasia": [s for s in cleaned if annotations.loc[s, "Tipo"] == "dysplasia"],
+    "Stroma-ad": [s for s in cleaned if "stroma" in annotations.loc[s, "Tipo"]],
+    "Carcinoma + Dysplasia": [s for s in cleaned if annotations.loc[s, "Tipo"] in ["carcinoma", "dysplasia"]],
+    "Fanconi": [s for s in cleaned if annotations.loc[s, "Fanconi"] == "Fanconi"],
+    "Non-Fanconi": [s for s in cleaned if annotations.loc[s, "Fanconi"] == "No Fanconi"]
 }
 
-# --- grupos individuales ---
-for t in tipos:
-    subgrupos[t] = [
-        s for s in cleaned
-        if annotations.loc[s, "Tipo"] == t
-    ]
-
-# --- combinaciones por pares ---
-for t1, t2 in combinations(tipos, 2):
-    key = f"{t1} + {t2}"
-    subgrupos[key] = [
-        s for s in cleaned
-        if annotations.loc[s, "Tipo"] in [t1, t2]
-    ]
-
-# Selección
 selected_group = st.selectbox("Subgroup", list(subgrupos.keys()))
 muestras = subgrupos[selected_group]
 
@@ -217,12 +193,12 @@ else:
 buf_png = io.BytesIO()
 fig_dendo.savefig(buf_png, format="png", dpi=300, bbox_inches="tight")
 buf_png.seek(0)
-st.download_button(" Download PNG (Dendrogram)", buf_png, "dendrogram.png", "image/png")
+st.download_button("⬇️ Download PNG (Dendrogram)", buf_png, "dendrogram.png", "image/png")
 
 buf_pdf = io.BytesIO()
 fig_dendo.savefig(buf_pdf, format="pdf", bbox_inches="tight")
 buf_pdf.seek(0)
-st.download_button(" Download PDF (Dendrogram)", buf_pdf, "dendrogram.pdf", "application/pdf")
+st.download_button("⬇️ Download PDF (Dendrogram)", buf_pdf, "dendrogram.pdf", "application/pdf")
 
 # ===============================
 # Exportar leyendas (opcional)
@@ -231,4 +207,4 @@ if module_mode == "dendrograma_clusters.py" and selected_annotations:
     buf_legends = io.BytesIO()
     fig_legends.savefig(buf_legends, format="png", dpi=300, bbox_inches="tight")
     buf_legends.seek(0)
-    st.download_button(" Download PNG (Legends)", buf_legends, "legends.png", "image/png")
+    st.download_button("⬇️ Download PNG (Legends)", buf_legends, "legends.png", "image/png")

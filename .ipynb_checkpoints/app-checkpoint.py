@@ -5,13 +5,13 @@ import io
 import importlib
 
 st.set_page_config(layout="wide")
-st.title("🔬 Interactive TDA Clustermap Explorer")
+st.title(" Interactive TDA Clustermap Explorer")
 
 # ============================================================
 # SELECCIÓN DEL MÓDULO DESDE LA INTERFAZ
 # ============================================================
 
-st.sidebar.header("⚙️ Module settings")
+st.sidebar.header(" Module settings")
 module_mode = st.sidebar.selectbox(
     "Select module:",
     ["generar_clustermap.py", "dendrograma_clusters.py"]
@@ -67,16 +67,16 @@ modo = st.radio("Select data source:", ["Use preloaded files", "Upload files man
 if modo == "Use preloaded files":
 
     matrices = [f for f in os.listdir(PRELOADED_MATRIX_DIR) if f.endswith(".csv")]
-    selected_matrix = st.selectbox("📌 Select matrix:", matrices)
+    selected_matrix = st.selectbox(" Select matrix:", matrices)
     df = pd.read_csv(os.path.join(PRELOADED_MATRIX_DIR, selected_matrix), index_col=0)
 
     metadata_files = [f for f in os.listdir(PRELOADED_METADATA_DIR) if f.endswith(".csv")]
-    selected_metadata = st.selectbox("📄 Select metadata:", metadata_files)
+    selected_metadata = st.selectbox(" Select metadata:", metadata_files)
     metadata = pd.read_csv(os.path.join(PRELOADED_METADATA_DIR, selected_metadata))
 
 else:
-    metadata_file = st.file_uploader("📄 Metadata (.csv)", type=["csv"])
-    matrix_files = st.file_uploader("📁 Distance matrices (.csv)", type=["csv"], accept_multiple_files=True)
+    metadata_file = st.file_uploader(" Metadata (.csv)", type=["csv"])
+    matrix_files = st.file_uploader(" Distance matrices (.csv)", type=["csv"], accept_multiple_files=True)
 
     if not (metadata_file and matrix_files):
         st.info("Upload metadata and at least one matrix.")
@@ -84,7 +84,7 @@ else:
 
     metadata = pd.read_csv(metadata_file)
     names = [m.name for m in matrix_files]
-    selected_matrix_name = st.selectbox("📌 Matrix to visualize:", names)
+    selected_matrix_name = st.selectbox(" Matrix to visualize:", names)
     matrix_file = next(m for m in matrix_files if m.name == selected_matrix_name)
     df = pd.read_csv(matrix_file, index_col=0)
 
@@ -118,7 +118,7 @@ K = st.slider("Number of clusters (K)", min_value=2, max_value=15, value=4)
 # CONTROLES
 # ============================================================
 
-st.subheader("🎛️ Annotations to display")
+st.subheader(" Annotations to display")
 selected_annotations = st.multiselect(
     "Select annotations",
     list(color_palettes.keys()),
@@ -128,17 +128,41 @@ selected_annotations = st.multiselect(
 metodo = st.selectbox("Linkage method", ["average", "ward", "single", "complete", "median"])
 
 # ---- Subgrupos ----
-st.subheader("🧪 Subgroups")
+st.subheader(" Subgroups")
+
+from itertools import combinations
+
+# Tipos únicos
+tipos = sorted(annotations["Tipo"].unique())
+
 subgrupos = {
     "All": cleaned,
-    "Carcinoma": [s for s in cleaned if annotations.loc[s, "Tipo"] == "carcinoma"],
-    "Dysplasia": [s for s in cleaned if annotations.loc[s, "Tipo"] == "dysplasia"],
-    "Stroma-ad": [s for s in cleaned if "stroma" in annotations.loc[s, "Tipo"]],
-    "Carcinoma + Dysplasia": [s for s in cleaned if annotations.loc[s, "Tipo"] in ["carcinoma", "dysplasia"]],
-    "Fanconi": [s for s in cleaned if annotations.loc[s, "Fanconi"] == "Fanconi"],
-    "Non-Fanconi": [s for s in cleaned if annotations.loc[s, "Fanconi"] == "No Fanconi"]
+    "Fanconi": [
+        s for s in cleaned
+        if annotations.loc[s, "Fanconi"] == "Fanconi"
+    ],
+    "Non-Fanconi": [
+        s for s in cleaned
+        if annotations.loc[s, "Fanconi"] == "No Fanconi"
+    ],
 }
 
+# --- grupos individuales ---
+for t in tipos:
+    subgrupos[t] = [
+        s for s in cleaned
+        if annotations.loc[s, "Tipo"] == t
+    ]
+
+# --- combinaciones por pares ---
+for t1, t2 in combinations(tipos, 2):
+    key = f"{t1} + {t2}"
+    subgrupos[key] = [
+        s for s in cleaned
+        if annotations.loc[s, "Tipo"] in [t1, t2]
+    ]
+
+# Selección
 selected_group = st.selectbox("Subgroup", list(subgrupos.keys()))
 muestras = subgrupos[selected_group]
 
@@ -150,7 +174,7 @@ submatrix = df.loc[muestras, muestras]
 subann = annotations.loc[muestras]
 
 # ---- Tamaño figura ----
-st.sidebar.header("📏 Figure size")
+st.sidebar.header(" Figure size")
 fig_width = st.sidebar.slider("Width", 8, 30, 18)
 fig_height = st.sidebar.slider("Height", 8, 40, 20)
 
@@ -193,12 +217,12 @@ else:
 buf_png = io.BytesIO()
 fig_dendo.savefig(buf_png, format="png", dpi=300, bbox_inches="tight")
 buf_png.seek(0)
-st.download_button("⬇️ Download PNG (Dendrogram)", buf_png, "dendrogram.png", "image/png")
+st.download_button(" Download PNG (Dendrogram)", buf_png, "dendrogram.png", "image/png")
 
 buf_pdf = io.BytesIO()
 fig_dendo.savefig(buf_pdf, format="pdf", bbox_inches="tight")
 buf_pdf.seek(0)
-st.download_button("⬇️ Download PDF (Dendrogram)", buf_pdf, "dendrogram.pdf", "application/pdf")
+st.download_button(" Download PDF (Dendrogram)", buf_pdf, "dendrogram.pdf", "application/pdf")
 
 # ===============================
 # Exportar leyendas (opcional)
@@ -207,4 +231,4 @@ if module_mode == "dendrograma_clusters.py" and selected_annotations:
     buf_legends = io.BytesIO()
     fig_legends.savefig(buf_legends, format="png", dpi=300, bbox_inches="tight")
     buf_legends.seek(0)
-    st.download_button("⬇️ Download PNG (Legends)", buf_legends, "legends.png", "image/png")
+    st.download_button(" Download PNG (Legends)", buf_legends, "legends.png", "image/png")
