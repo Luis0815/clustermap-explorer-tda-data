@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 st.title(" Interactive TDA Clustermap Explorer")
 
 # ============================================================
-# SELECCIÓN DEL MÓDULO DESDE LA INTERFAZ
+# SELECCIÓN DEL MÓDULO
 # ============================================================
 
 st.sidebar.header(" Module settings")
@@ -18,7 +18,7 @@ module_mode = st.sidebar.selectbox(
 )
 
 # ============================================================
-# IMPORTACIÓN SEGÚN LA OPCIÓN ELEGIDA
+# IMPORTACIÓN DEL MÓDULO
 # ============================================================
 
 if module_mode == "generar_clustermap.py":
@@ -26,9 +26,6 @@ if module_mode == "generar_clustermap.py":
         mod = importlib.import_module("generar_clustermap")
         plot_function = mod.plot_clustermap
         clean_filename = mod.clean_filename
-        get_sample_type = mod.get_sample_type
-        get_fanconi_status = mod.get_fanconi_status
-        get_grado_displasia = mod.get_grado_displasia
         color_palettes = mod.color_palettes
         st.sidebar.success("Using generar_clustermap.py")
     except Exception as e:
@@ -40,9 +37,6 @@ else:
         mod = importlib.import_module("dendrograma_clusters")
         plot_function = mod.plot_dendrograma
         clean_filename = mod.clean_filename
-        get_sample_type = mod.get_sample_type
-        get_fanconi_status = mod.get_fanconi_status
-        get_grado_displasia = mod.get_grado_displasia
         color_palettes = mod.color_palettes
         st.sidebar.success("Using dendrograma_clusters.py")
     except Exception as e:
@@ -50,18 +44,18 @@ else:
         st.stop()
 
 # ============================================================
-# Rutas base
+# RUTAS
 # ============================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-PRELOADED_MATRIX_DIR = os.path.join(DATA_DIR, "matrices")
-PRELOADED_METADATA_DIR = os.path.join(DATA_DIR, "anotaciones")
+PRELOADED_MATRIX_DIR = os.path.join(DATA_DIR, "matrices_epitelio")
+PRELOADED_METADATA_DIR = os.path.join(DATA_DIR, "anotaciones_epitelio")
 
 modo = st.radio("Select data source:", ["Use preloaded files", "Upload files manually"])
 
 # ============================================================
-# CARGA ARCHIVOS
+# CARGA DE ARCHIVOS
 # ============================================================
 
 if modo == "Use preloaded files":
@@ -89,7 +83,7 @@ else:
     df = pd.read_csv(matrix_file, index_col=0)
 
 # ============================================================
-# ANOTACIONES
+# ANOTACIONES (🔥 NUEVO FLUJO CORRECTO)
 # ============================================================
 
 cleaned = [clean_filename(i) for i in df.index]
@@ -99,17 +93,34 @@ df.columns = cleaned
 metadata["Sample"] = metadata["Archivo"].apply(clean_filename)
 metadata = metadata.set_index("Sample")
 
-annotations = pd.DataFrame(index=cleaned)
-annotations["Tipo"] = [get_sample_type(n) for n in cleaned]
-annotations["Fanconi"] = [get_fanconi_status(n) for n in cleaned]
-annotations["Grado displasia"] = [get_grado_displasia(n) for n in cleaned]
+# Alinear metadata
+metadata_aligned = metadata.reindex(cleaned)
 
-for col in ["Condition", "Gender", "Tumor stage", "BMT", "Desmoplastic category", "TDA_by_distance"]:
-    if col in metadata.columns:
-        annotations[col] = metadata.reindex(cleaned)[col]
+annotations = pd.DataFrame(index=cleaned)
+
+# 🔥 Tipo desde ROI
+if "ROI" in metadata_aligned.columns:
+    annotations["Tipo"] = metadata_aligned["ROI"]
+
+# 🔥 Grupo (Fanconi)
+if "Group" in metadata_aligned.columns:
+    annotations["Group"] = metadata_aligned["Group"]
+
+# 🔥 Otras columnas
+for col in [
+    "Tumor.type",
+    "Tumor.site",
+    "Tumor.stage",
+    "Gender",
+    "BMT",
+    "Desmoplastic.category",
+    "Patient.status"
+]:
+    if col in metadata_aligned.columns:
+        annotations[col] = metadata_aligned[col]
 
 # ============================================================
-# Clusters k (solo se aplica a dendrograma_clusters)
+# CLUSTERS (solo dendrograma)
 # ============================================================
 
 K = st.slider("Number of clusters (K)", min_value=2, max_value=15, value=4)
@@ -122,39 +133,35 @@ st.subheader(" Annotations to display")
 selected_annotations = st.multiselect(
     "Select annotations",
     list(color_palettes.keys()),
-    default=["Tipo", "Fanconi"]
+    default=["Tipo", "Group"]
 )
 
 metodo = st.selectbox("Linkage method", ["average", "ward", "single", "complete", "median"])
 
-# ---- Subgrupos ----
+# ============================================================
+# SUBGRUPOS
+# ============================================================
+
 st.subheader(" Subgroups")
 
 from itertools import combinations
 
-# Tipos únicos
-tipos = sorted(annotations["Tipo"].unique())
+tipos = sorted(annotations["Tipo"].dropna().unique())
 
 subgrupos = {
     "All": cleaned,
-    "Fanconi": [
-        s for s in cleaned
-        if annotations.loc[s, "Fanconi"] == "Fanconi"
-    ],
-    "Non-Fanconi": [
-        s for s in cleaned
-        if annotations.loc[s, "Fanconi"] == "No Fanconi"
-    ],
+    "FA": [s for s in cleaned if annotations.loc[s, "Group"] == "FA"],
+    "Non FA": [s for s in cleaned if annotations.loc[s, "Group"] == "Non FA"],
 }
 
-# --- grupos individuales ---
+# individuales
 for t in tipos:
     subgrupos[t] = [
         s for s in cleaned
         if annotations.loc[s, "Tipo"] == t
     ]
 
-# --- combinaciones por pares ---
+# combinaciones
 for t1, t2 in combinations(tipos, 2):
     key = f"{t1} + {t2}"
     subgrupos[key] = [
@@ -162,7 +169,6 @@ for t1, t2 in combinations(tipos, 2):
         if annotations.loc[s, "Tipo"] in [t1, t2]
     ]
 
-# Selección
 selected_group = st.selectbox("Subgroup", list(subgrupos.keys()))
 muestras = subgrupos[selected_group]
 
@@ -173,14 +179,13 @@ if len(muestras) < 3:
 submatrix = df.loc[muestras, muestras]
 subann = annotations.loc[muestras]
 
-# ---- Tamaño figura ----
+# ============================================================
+# FIGURA
+# ============================================================
+
 st.sidebar.header(" Figure size")
 fig_width = st.sidebar.slider("Width", 8, 30, 18)
 fig_height = st.sidebar.slider("Height", 8, 40, 20)
-
-# ============================================================
-# GENERAR FIGURA (usa el módulo elegido)
-# ============================================================
 
 if module_mode == "dendrograma_clusters.py":
     fig_dendo = plot_function(
@@ -211,24 +216,23 @@ else:
     )
     st.pyplot(fig_dendo)
 
-# ===============================
-# Exportar dendrograma
-# ===============================
+# ============================================================
+# EXPORTAR
+# ============================================================
+
 buf_png = io.BytesIO()
 fig_dendo.savefig(buf_png, format="png", dpi=300, bbox_inches="tight")
 buf_png.seek(0)
-st.download_button(" Download PNG (Dendrogram)", buf_png, "dendrogram.png", "image/png")
+st.download_button(" Download PNG", buf_png, "figure.png", "image/png")
 
 buf_pdf = io.BytesIO()
 fig_dendo.savefig(buf_pdf, format="pdf", bbox_inches="tight")
 buf_pdf.seek(0)
-st.download_button(" Download PDF (Dendrogram)", buf_pdf, "dendrogram.pdf", "application/pdf")
+st.download_button(" Download PDF", buf_pdf, "figure.pdf", "application/pdf")
 
-# ===============================
-# Exportar leyendas (opcional)
-# ===============================
+# Leyendas
 if module_mode == "dendrograma_clusters.py" and selected_annotations:
     buf_legends = io.BytesIO()
     fig_legends.savefig(buf_legends, format="png", dpi=300, bbox_inches="tight")
     buf_legends.seek(0)
-    st.download_button(" Download PNG (Legends)", buf_legends, "legends.png", "image/png")
+    st.download_button(" Download Legends", buf_legends, "legends.png", "image/png")

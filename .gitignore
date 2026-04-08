@@ -1,0 +1,6 @@
+data/matrices_epitelio/distancias_wasserstein_dim0_linfoides.csv
+data/matrices_epitelio/distancias_wasserstein_dim1_linfoides.csv
+data/matrices_epitelio/distancias_wasserstein_dim0_mieloides.csv
+data/matrices_epitelio/distancias_wasserstein_dim1_mieloides.csv
+data/matrices_epitelio/*.csv
+data/matrices_epitelio/distancias_wasserstein_dim1_mieloides.csv.gz
